@@ -594,6 +594,24 @@ def Report_Year_month(trades_df, output_csv='Backtest_Report.csv'):
     print(f"Combined yearly and monthly summaries saved to '{output_csv}'")
 
 # 成功 訊號策略區 
+def generate_signals_1_lot(df, threshold_1=43, threshold_2=150):
+    '''
+    threshold_1 = 0 為 結算日的13:01 進場多單 best 43  13:44 進場空單 best 87 15:44
+    threshold_2 = 1 為 結算日的13:00 出場多單 best 150 10:31 出場空單 best 15 12:46
+    '''
+    df['long_entry'] = 0
+    df['long_exit'] = 0
+    df['short_entry'] = 0
+    df['short_exit'] = 0
+    grouped = df.groupby('duedmonth')
+    # 遍歷每個組別，設定進場與出場點
+    for name, group in grouped:
+        # 設定進場點：該月的第一筆資料
+        df.loc[group.index[threshold_1], 'long_entry'] = 1
+        # 設定出場點：該月的最後一筆資料
+        df.loc[group.index[-threshold_2], 'long_exit'] = 1    
+    return df
+
 def generate_signals_ai_20250616_164528_4(df, bb_window=18250, bb_std_dev_multiplier=9.79, mfi_window=15846, atr_window=17940, atr_norm_window=9489, vol_stability_threshold=9.41):
     bb_std_dev_multiplier_scaled = bb_std_dev_multiplier / 10.0
     vol_stability_threshold_scaled = vol_stability_threshold / 10.0
