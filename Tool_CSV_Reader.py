@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import filedialog, ttk
 import pandas as pd
 import numpy as np
+import ast 
 
 class CSVSorterApp:
     def __init__(self, master):
@@ -314,7 +315,7 @@ class CSVSorterApp:
 
 
     def copy_to_clipboard(self, event):
-        """雙擊複製 best_params 欄位的內容"""
+        """雙擊複製最佳參數欄位的內容，將 .0 結尾的浮點數轉成整數"""
         selected_item = self.tree.selection()
         if selected_item:
             item_id = selected_item[0]
@@ -325,9 +326,19 @@ class CSVSorterApp:
                 col_index = col_names.index("最佳參數")
                 param_value = values[col_index]
 
+                # 嘗試解析成 list 並處理內容
+                try:
+                    parsed = ast.literal_eval(param_value)
+                    if isinstance(parsed, list):
+                        cleaned = [int(x) if isinstance(x, float) and x.is_integer() else x for x in parsed]
+                        param_value = str(cleaned)
+                except Exception:
+                    pass  # 無法解析就保留原本的值
+
                 self.master.clipboard_clear()
                 self.master.clipboard_append(str(param_value))
-                self.master.update()  # 更新剪貼板
+                self.master.update()
+
 
 
 def main():
